@@ -37,13 +37,16 @@ def create_configuration_file(dataset: Dataset) -> str:
 
     for level in levels:
         sql = (
-            'SELECT ST_AsBinary(gg.geometry) AS geometry, gg.id, gg.label, '
+            'SELECT ST_AsBinary(gg.geometry) AS geometry, '
+            'ST_AsText(circle.center) AS centroid, '
+            'gg.id, gg.label, '
             'gg.level, ge.label as type, gg.internal_code as code,'
             'pg.internal_code as parent_code '
             'FROM georepo_geographicalentity gg '
             'INNER JOIN georepo_entitytype ge on ge.id = gg.type_id '
             'LEFT JOIN georepo_geographicalentity pg on pg.id = gg.parent_id '
-            'WHERE gg.geometry && !BBOX! and gg.level = {level}'
+            'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '
+            'WHERE gg.geometry && !BBOX! and gg.level = {level} '
             'AND gg.dataset_id = {dataset_id}'.
             format(
                 level=level,
