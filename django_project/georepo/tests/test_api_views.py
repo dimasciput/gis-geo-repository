@@ -8,7 +8,8 @@ from rest_framework.test import APIRequestFactory
 
 from georepo.api_views.reference_layer import (
     ReferenceLayerDetail,
-    ReferenceLayerEntityList
+    ReferenceLayerEntityList,
+    ReferenceLayerHierarchical
 )
 from georepo.api_views.protected_api import IsDatasetAllowedAPI
 from georepo.tests.model_factories import (
@@ -25,7 +26,8 @@ class TestApiViews(TestCase):
             uuid=str(uuid.uuid4()),
             type=self.entity_type,
             level=0,
-            dataset=self.dataset
+            dataset=self.dataset,
+            internal_code='GO'
         )
         self.factory = APIRequestFactory()
 
@@ -81,3 +83,22 @@ class TestApiViews(TestCase):
         view = ReferenceLayerEntityList.as_view()
         response = view(request, **kwargs)
         self.assertEqual(response.status_code, 200)
+
+    def test_get_hierarchical_data(self):
+        GeographicalEntityF.create(
+            uuid=str(uuid.uuid4()),
+            level=1,
+            dataset=self.dataset,
+            internal_code='GO2',
+            parent=self.entity
+        )
+        kwargs = {
+            'uuid': self.entity.uuid
+        }
+        request = self.factory.get(
+            reverse('reference-layer-hierarchical', kwargs=kwargs)
+        )
+        view = ReferenceLayerHierarchical.as_view()
+        response = view(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('GO' in response.data)

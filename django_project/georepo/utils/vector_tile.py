@@ -45,7 +45,7 @@ def create_configuration_file(dataset: Dataset) -> str:
             'FROM georepo_geographicalentity gg '
             'INNER JOIN georepo_entitytype ge on ge.id = gg.type_id '
             'LEFT JOIN georepo_geographicalentity pg on pg.id = gg.parent_id '
-            'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '
+            'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '  # noqa
             'WHERE gg.geometry && !BBOX! and gg.level = {level} '
             'AND gg.dataset_id = {dataset_id}'.
             format(

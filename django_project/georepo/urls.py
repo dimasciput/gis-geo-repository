@@ -7,7 +7,8 @@ from georepo.api_views.reference_layer_list import (
 from georepo.api_views.reference_layer import (
     ReferenceLayerGeojson,
     ReferenceLayerEntityList,
-    ReferenceLayerDetail
+    ReferenceLayerDetail,
+    ReferenceLayerHierarchical
 )
 from georepo.api_views.protected_api import IsDatasetAllowedAPI
 
@@ -32,6 +33,11 @@ urlpatterns = [
         r'api/reference-layer/list/?$',
         ReferenceLayerList.as_view(),
         name='reference-layer-list'),
+    re_path(
+        r'api/reference-layer/hierarchical/(?P<uuid>[\da-f-]+)/?$',
+        ReferenceLayerHierarchical.as_view(),
+        name='reference-layer-hierarchical'
+    ),
     re_path(
         r'api/protected/?$',
         IsDatasetAllowedAPI.as_view(),

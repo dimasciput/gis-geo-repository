@@ -88,3 +88,34 @@ class ReferenceLayerGeojson(ReferenceLayerEntityList):
         if getattr(self, 'swagger_fake_view', False):
             return None
         return GeographicalGeojsonSerializer
+
+
+class ReferenceLayerHierarchical(ApiCache):
+    cache_model = Dataset
+
+    def children_codes(self, parent_entity: GeographicalEntity):
+        codes = []
+        entities = GeographicalEntity.objects.filter(
+            parent=parent_entity
+        ).order_by('internal_code')
+        for entity in entities:
+            if GeographicalEntity.objects.filter(parent=entity).exists():
+                codes.append({
+                    entity.internal_code: self.children_codes(entity)
+                })
+            else:
+                codes.append(entity.internal_code)
+        return codes
+
+    def get_response_data(self, request, *args, **kwargs):
+        uuid = kwargs.get('uuid', None)
+        try:
+            entity_layer = GeographicalEntity.objects.get(
+                uuid=uuid
+            )
+        except GeographicalEntity.DoesNotExist:
+            return []
+
+        code = {entity_layer.internal_code: self.children_codes(entity_layer)}
+
+        return code
