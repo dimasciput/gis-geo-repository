@@ -94,14 +94,10 @@ def load_geojson(
 
         if level > 0:
             try:
-                parent_label_field = name_field.format(
-                    level=level - 1
-                )
                 parent_code_field = code_field.format(
                     level=level - 1
                 )
                 parent = GeographicalEntity.objects.get(
-                    label__iexact=properties[parent_label_field],
                     internal_code__iexact=properties[parent_code_field],
                     level=level - 1
                 )
