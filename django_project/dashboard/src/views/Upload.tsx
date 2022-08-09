@@ -65,7 +65,7 @@ interface EntityType {
 
 
 function Uploader() {
-    const [labelFormat, setLabelFormat] = useState('admin_{level}');
+    const [labelFormat, setLabelFormat] = useState('name_{level}');
     const [codeFormat, setCodeFormat] = useState('code_{level}');
     const [dataset, setDataset] = useState('');
     const [entityTypes, setEntityTypes] = useState<EntityType | undefined>({})
