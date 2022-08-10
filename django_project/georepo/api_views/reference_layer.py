@@ -20,11 +20,11 @@ class ReferenceLayerDetail(ApiCache):
 
     def get_response_data(self, request, *args, **kwargs):
         uuid = kwargs.get('uuid', None)
-        entity_layer = get_object_or_404(
-            GeographicalEntity, uuid=uuid
+        dataset = get_object_or_404(
+            Dataset, uuid=uuid
         )
         response_data = (
-            DetailedEntitySerializer(entity_layer).data
+            DetailedEntitySerializer(dataset).data
         )
         return response_data
 
@@ -46,16 +46,8 @@ class ReferenceLayerEntityList(ApiCache):
         page = int(request.GET.get('page', '1'))
         page_size = int(request.GET.get('page_size', '50'))
 
-        try:
-            entity_layer = GeographicalEntity.objects.get(
-                uuid=uuid
-            )
-        except GeographicalEntity.DoesNotExist:
-            return []
-
-        dataset = entity_layer.dataset
         entities = GeographicalEntity.objects.filter(
-            dataset=dataset
+            dataset__uuid=uuid
         )
         if entity_type:
             entities = entities.filter(
@@ -93,7 +85,7 @@ class ReferenceLayerGeojson(ReferenceLayerEntityList):
 class ReferenceLayerHierarchical(ApiCache):
     cache_model = Dataset
 
-    def children_codes(self, parent_entity: GeographicalEntity):
+    def entities_code(self, parent_entity: GeographicalEntity):
         codes = []
         entities = GeographicalEntity.objects.filter(
             parent=parent_entity
@@ -101,7 +93,7 @@ class ReferenceLayerHierarchical(ApiCache):
         for entity in entities:
             if GeographicalEntity.objects.filter(parent=entity).exists():
                 codes.append({
-                    entity.internal_code: self.children_codes(entity)
+                    entity.internal_code: self.entities_code(entity)
                 })
             else:
                 codes.append(entity.internal_code)
@@ -109,13 +101,20 @@ class ReferenceLayerHierarchical(ApiCache):
 
     def get_response_data(self, request, *args, **kwargs):
         uuid = kwargs.get('uuid', None)
+        codes = []
         try:
-            entity_layer = GeographicalEntity.objects.get(
-                uuid=uuid
-            )
-        except GeographicalEntity.DoesNotExist:
+            dataset = Dataset.objects.get(uuid=uuid)
+        except Dataset.DoesNotExist:
             return []
 
-        code = {entity_layer.internal_code: self.children_codes(entity_layer)}
+        highest_entities = GeographicalEntity.objects.filter(
+            level=0,
+            dataset=dataset
+        )
 
-        return code
+        for entity in highest_entities:
+            codes.append({
+                entity.internal_code: self.entities_code(entity)
+            })
+
+        return codes

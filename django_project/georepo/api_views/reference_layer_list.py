@@ -1,6 +1,6 @@
 from georepo.api_views.api_cache import ApiCache
-from georepo.models import GeographicalEntity, Dataset
-from georepo.serializers.entity import EntitySerializer
+from georepo.models import Dataset
+from georepo.serializers.dataset import DatasetSerializer
 
 
 class ReferenceLayerList(ApiCache):
@@ -10,11 +10,9 @@ class ReferenceLayerList(ApiCache):
     cache_model = Dataset
 
     def get_response_data(self, request, *args, **kwargs):
-        parent_entities = GeographicalEntity.objects.filter(
-            parent__isnull=True
-        )
-        serializer = EntitySerializer(
-            parent_entities,
+        datasets = Dataset.objects.all()
+        serializer = DatasetSerializer(
+            datasets,
             many=True
         )
         return serializer.data
