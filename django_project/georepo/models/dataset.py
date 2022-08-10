@@ -1,3 +1,4 @@
+import uuid
 from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
@@ -9,6 +10,11 @@ class Dataset(models.Model):
         max_length=255,
         null=False,
         blank=False
+    )
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        blank=True
     )
 
     vector_tiles_path = models.CharField(
@@ -24,6 +30,9 @@ class Dataset(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+
         self.last_update = timezone.now()
 
         # Clear cache

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from django.urls import reverse
-from georepo.models import GeographicalEntity
+from georepo.models import GeographicalEntity, Dataset
 
 
 class LevelEntitySerializer(serializers.ModelSerializer):
@@ -114,26 +114,36 @@ class GeographicalGeojsonSerializer(
 class DetailedEntitySerializer(EntitySerializer):
     levels = serializers.SerializerMethodField()
     vector_tiles = serializers.SerializerMethodField()
+    source = serializers.SerializerMethodField()
 
     class Meta:
-        model = GeographicalEntity
+        model = Dataset
         fields = [
             'name',
-            'identifier',
             'source',
             'levels',
-            'vector_tiles',
-            'last_update'
+            'vector_tiles'
         ]
 
-    def get_vector_tiles(self, obj: GeographicalEntity):
-        if obj.dataset.vector_tiles_path:
-            return f'{obj.dataset.vector_tiles_path}'
+    def get_source(self, obj: Dataset):
+        source = obj.geographicalentity_set.filter(
+            source__isnull=False
+        )
+        if source.exists():
+            return source.first().source
+        return ''
+
+    def get_name(self, obj: Dataset):
+        return obj.label
+
+    def get_vector_tiles(self, obj: Dataset):
+        if obj.vector_tiles_path:
+            return f'{obj.vector_tiles_path}'
         return '-'
 
-    def get_levels(self, obj: GeographicalEntity):
+    def get_levels(self, obj: Dataset):
         entities = GeographicalEntity.objects.filter(
-            dataset_id=obj.dataset.id
+            dataset_id=obj.id
         ).distinct('level')
         return LevelEntitySerializer(
             entities,
