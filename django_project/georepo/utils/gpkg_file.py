@@ -74,11 +74,15 @@ def load_gpkg_file(
                     )
                     parent = GeographicalEntity.objects.get(
                         internal_code__iexact=properties[parent_code_field],
-                        level=level - 1
+                        level=level - 1,
+                        dataset=dataset
                     )
                     entity.parent = parent
                     entity.save()
-                except (KeyError, GeographicalEntity.DoesNotExist):
+                except (
+                        KeyError,
+                        GeographicalEntity.DoesNotExist,
+                        GeographicalEntity.MultipleObjectsReturned):
                     pass
 
             print('{0} - {1} {2}'.format(

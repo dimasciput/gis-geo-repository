@@ -43,3 +43,15 @@ def process_layer_upload_session(layer_upload_session_id: str):
     )
     layer_upload_session.status = DONE
     layer_upload_session.save()
+
+
+@shared_task(name="generate_vector_tiles")
+def generate_vector_tiles_task(dataset_id: str, overwrite: bool):
+    from georepo.models.dataset import Dataset
+    from georepo.utils.vector_tile import generate_vector_tiles
+
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+        generate_vector_tiles(dataset, overwrite)
+    except Dataset.DoesNotExist:
+        return

@@ -29,6 +29,12 @@ class Dataset(models.Model):
         blank=True
     )
 
+    task_id = models.CharField(
+        blank=True,
+        default='',
+        max_length=256
+    )
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid.uuid4()

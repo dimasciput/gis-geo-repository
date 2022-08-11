@@ -8,6 +8,7 @@ from ..models.language import *  # noqa
 from ..models.dataset import *  # noqa
 from ..models.code import *  # noqa
 from ..models.style import *  # noqa
+from ..models.dataset_tile_config import *  # noqa
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
