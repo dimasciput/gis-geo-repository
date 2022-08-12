@@ -148,3 +148,5 @@ CACHES = {
 LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'
 LAYER_TILES_PATH = os.getenv('LAYER_TILES_PATH')
+LAYER_TILES_BASE_URL = os.getenv(
+    'LAYER_TILES_BASE_URL', 'http://0.0.0.0:51101')

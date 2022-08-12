@@ -3,6 +3,7 @@ import math
 
 from django.contrib import admin
 from django.conf import settings
+from django.utils.html import format_html
 from guardian.admin import GuardedModelAdmin
 from georepo.models import (
     GeographicalEntity,
@@ -56,8 +57,19 @@ def generate_vector_tiles(modeladmin, request, queryset):
 
 
 class DatasetAdmin(GuardedModelAdmin):
-    list_display = ('label', 'size', 'tiling_status')
+    list_display = ('label', 'size', 'tiling_status', 'layer_preview')
     actions = [generate_vector_tiles]
+
+    def layer_preview(self, obj: Dataset):
+        tile_path = os.path.join(
+            settings.LAYER_TILES_PATH,
+            obj.label
+        )
+        if os.path.exists(tile_path):
+            return format_html(
+                '<a href="/layer-test/?dataset={}">Layer Preview</a>'.format(
+                    obj.label))
+        return '-'
 
     def tiling_status(self, obj: Dataset):
         if obj.task_id:

@@ -1,5 +1,4 @@
 from django.urls import path, re_path
-from django.views.generic import TemplateView
 
 from georepo.api_views.reference_layer_list import (
     ReferenceLayerList
@@ -10,12 +9,11 @@ from georepo.api_views.reference_layer import (
     ReferenceLayerDetail,
     ReferenceLayerHierarchical
 )
+from georepo.views.layer_test import LayerTestView
 from georepo.api_views.protected_api import IsDatasetAllowedAPI
 
 urlpatterns = [
-    path('layer-test/', TemplateView.as_view(
-        template_name='test_layer.html'
-    )),
+    path('layer-test/', LayerTestView.as_view()),
     re_path(
         r'api/reference-layer/(?P<uuid>[\da-f-]+)/(?P<entity_type>\w+)/?$',
         ReferenceLayerGeojson.as_view(),
