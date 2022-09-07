@@ -27,14 +27,17 @@ admin.autodiscover()
 
 urlpatterns = [
     path('account/', include('django.contrib.auth.urls')),
-    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0),
+    re_path(r'^docs/$', schema_view.with_ui('swagger', cache_timeout=0),
             name='schema-swagger-ui'),
     re_path(r'^admin/', admin.site.urls),
     re_path(r'^auth/', include('django.contrib.auth.urls')),
-    re_path(r'', include('georepo.urls')),
-    re_path(r'', include('dashboard.urls'))
 ]
 
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    re_path(r'', include('georepo.urls')),
+    re_path(r'', include('dashboard.urls'))
+]

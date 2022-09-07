@@ -94,14 +94,18 @@ function Uploader() {
     }
 
     useEffect(() => {
-        const currentFiles = dropZone.current.files
+        const dropZoneCurrent = dropZone.current;
+        if (!dropZoneCurrent) {
+            return;
+        }
+        const currentFiles: any = dropZoneCurrent['files']
         let allFilesValid = true
         for (let file of currentFiles) {
-            if (!levels[file.meta.id]) {
+            if (!levels![file.meta.id]) {
                 allFilesValid = false
                 break
             }
-            if (!entityTypes[file.meta.id]) {
+            if (!entityTypes![file.meta.id]) {
                 allFilesValid = false
                 break
             }
@@ -118,8 +122,8 @@ function Uploader() {
     // @ts-ignore
     const handleChangeStatus = ({meta, file}, status) => {
         console.log(status, meta, file)
-        const _levels = levels
-        const _entityTypes = entityTypes
+        const _levels = levels!
+        const _entityTypes = entityTypes!
 
         if (status === 'preparing') {
             _levels[meta.id] = ''
@@ -200,7 +204,7 @@ function Uploader() {
 
     // receives array of files that are done uploading when submit button is clicked
     const handleSubmit = () => {
-        const files = dropZone.current.files
+        const files: any = dropZone.current!['files']
         const postData = {
             'entity_types': entityTypes,
             'levels': levels,
@@ -265,14 +269,12 @@ function Uploader() {
                      <Dropzone
                          ref={dropZone}
                          disabled={loading}
-                         SubmitButtonComponent={null}
                          PreviewComponent={(props) => <UploadComponent
                              key={props.meta.id} meta={props.meta}
                              fileWithMeta={props.fileWithMeta}
-                             level={levels[props.meta.id]} entityType={entityTypes[props.meta.id]} updateLevelAndEntityType={updateLevelAndEntityType} /> }
+                             level={levels![props.meta.id]} entityType={entityTypes![props.meta.id]} updateLevelAndEntityType={updateLevelAndEntityType} /> }
                          getUploadParams={getUploadParams}
                          onChangeStatus={handleChangeStatus}
-                         onSubmit={null}
                          accept="application/geo+json"
                      />
                 </div>

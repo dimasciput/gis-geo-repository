@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block head_title %}{% endblock %}</title>
+    <style>
+        :root {
+            --primary-color: {{ preferences.primary_color }};
+            --anti-primary-color: {{ preferences.anti_primary_color }};
+
+            --secondary-color: {{ preferences.secondary_color }};
+            --anti-secondary-color: {{ preferences.anti_secondary_color }};
+
+            --tertiary-color: {{ preferences.tertiary_color }};
+            --anti-tertiary-color: {{ preferences.anti_tertiary_color }};
+            }
+    </style>
+    {% block extra_head %}
+    {% endblock %}
+</head>
+
+<script>
+  window.preferences = {{ preferences|safe }};
+</script>
+<body>
+{% block content %}
+{% endblock %}
+</body>
+</html>

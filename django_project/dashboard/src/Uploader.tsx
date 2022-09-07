@@ -6,7 +6,7 @@ import './styles/index.scss';
 import Uploader from './views/Upload';
 import reportWebVitals from './reportWebVitals';
 
-const root = ReactDOM.createRoot(document.getElementById('app'))
+const root = ReactDOM.createRoot(document.getElementById('app')!)
 root.render(
     <Provider store={store}>
         <Uploader />
