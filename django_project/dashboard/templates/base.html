@@ -21,6 +21,7 @@
 
 <script>
   window.preferences = {{ preferences|safe }};
+  const csrfToken = "{{ csrf_token }}";
 </script>
 <body>
 {% block content %}
