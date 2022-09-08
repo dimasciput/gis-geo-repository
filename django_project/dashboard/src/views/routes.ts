@@ -8,8 +8,8 @@ import {SvgIconTypeMap} from "@mui/material/SvgIcon/SvgIcon";
 interface RouteInterface {
   name: string,
   path: string,
-  element: any,
-  icon: OverridableComponent<SvgIconTypeMap> | null
+  element: Function,
+  icon: OverridableComponent<SvgIconTypeMap>
 }
 
 export const routes: Array<RouteInterface> = [

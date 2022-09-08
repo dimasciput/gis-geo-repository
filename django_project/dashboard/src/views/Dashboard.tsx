@@ -17,11 +17,9 @@ function Dashboard() {
       <NavBar/>
       <main>
         <Router>
-          <SideNavigation pageName={"Home"} />
-
+          <SideNavigation/>
           <div className='AdminContent'>
             <Header/>
-
             <Routes>
               {routes.map((route, key) => (
                 <Route key={key} path={route.path} element={<route.element/>}/>
@@ -48,7 +46,7 @@ export function Header() {
   return (
     <div className='AdminContentHeader'>
       <div className='AdminContentHeader-Left'>
-        <b className='light'>{route.name}</b>
+        <b className='light'>{ route ? route.name : '' }</b>
       </div>
     </div>
   )

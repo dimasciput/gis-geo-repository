@@ -30,7 +30,10 @@ export default function NavBar() {
               title={'Homepage'}
               className='nav-header-link'
             >
-              <img src={siteIcon} alt="Logo"/>
+              {
+                siteIcon ?
+                  <img src={siteIcon} alt="Logo"/> : null
+              }
             </a>
           </li>
           <li className='NavHeaderTitle'>

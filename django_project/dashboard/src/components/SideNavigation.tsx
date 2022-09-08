@@ -5,9 +5,7 @@ import {
   NavLink
 } from "react-router-dom";
 
-interface SideNavigationProps {
-  pageName: string;
-}
+interface SideNavigationProps {}
 
 export default function SideNavigation(props: SideNavigationProps) {
   return (
