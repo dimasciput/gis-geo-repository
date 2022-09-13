@@ -1,14 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+{% extends "base.html" %}
+{% block extra_head %}
     {% load render_bundle from webpack_loader %}
-</head>
-<body>
-    <div id="app"></div>
-    {% render_bundle 'App' 'css' %}
-    {% render_bundle 'App' 'js' %}
-</body>
+{% endblock %}
+
+{% block content %}
+
+
+<div id="app"></div>
+{% render_bundle 'App' 'css' %}
+{% render_bundle 'App' 'js' %}
+
+{% endblock %}
+
 </html>
