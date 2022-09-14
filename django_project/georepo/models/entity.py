@@ -1,4 +1,6 @@
-import uuid
+from uuid import uuid4
+
+from django.conf import settings
 from django.contrib.gis.db import models
 
 
@@ -13,7 +15,12 @@ class GeographicalEntity(models.Model):
     )
 
     uuid = models.UUIDField(
-        default=uuid.uuid4
+        default=uuid4
+    )
+
+    uuid_versioned = models.UUIDField(
+        primary_key=False,
+        default=uuid4
     )
 
     internal_code = models.CharField(
@@ -42,7 +49,31 @@ class GeographicalEntity(models.Model):
         blank=True
     )
 
-    is_latest = models.BooleanField(default=False)
+    is_latest = models.BooleanField(
+        null=True,
+        blank=True,
+    )
+
+    is_approved = models.BooleanField(
+        null=True,
+        blank=True
+    )
+
+    is_private = models.BooleanField(
+        default=False
+    )
+
+    approved_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
     geometry = models.MultiPolygonField(
         null=True
@@ -60,6 +91,12 @@ class GeographicalEntity(models.Model):
     )
 
     license = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    qc_notes = models.TextField(
+        verbose_name='QC Notes',
         null=True,
         blank=True
     )
