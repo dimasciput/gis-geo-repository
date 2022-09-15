@@ -1,7 +1,12 @@
 import math
+import os.path
+import tempfile
+import zipfile
 
-from rest_framework.generics import get_object_or_404
+from django.http import Http404, HttpResponse
+from rest_framework.generics import get_object_or_404, GenericAPIView
 from django.core.paginator import Paginator
+from django.conf import settings
 
 from georepo.api_views.api_cache import ApiCache
 from georepo.models import GeographicalEntity, Dataset
@@ -10,6 +15,46 @@ from georepo.serializers.entity import (
     GeographicalEntitySerializer,
     DetailedEntitySerializer
 )
+
+
+class ReferenceLayerGeojsonDownload(GenericAPIView):
+    """
+    API to download reference layer as zipped geojson
+    """
+
+    def get(self, request, *args, **kwargs):
+        uuid = kwargs.get('uuid', None)
+        suffix = '.geojson'
+        dataset = get_object_or_404(
+            Dataset,
+            uuid=uuid
+        )
+        geojson_file_path = os.path.join(
+            settings.GEOJSON_FOLDER_OUTPUT,
+            dataset.label
+        ) + suffix
+
+        if not os.path.exists(geojson_file_path):
+            from dashboard.tasks import generate_dataset_export_data
+            generate_dataset_export_data.delay(dataset.id)
+            raise Http404('Geojson does not exists')
+
+        with tempfile.SpooledTemporaryFile() as tmp_file:
+            with zipfile.ZipFile(
+                    tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+                archive.write(
+                    geojson_file_path,
+                    arcname=geojson_file_path.split('/')[-1])
+            tmp_file.seek(0)
+            response = HttpResponse(
+                tmp_file.read(), content_type='application/x-zip-compressed'
+            )
+            response['Content-Disposition'] = (
+                'attachment; filename="{}.zip"'.format(
+                    dataset.label
+                )
+            )
+            return response
 
 
 class ReferenceLayerDetail(ApiCache):

@@ -54,3 +54,19 @@ INSTALLED_APPS = INSTALLED_APPS + (
     'georepo',
     'dashboard'
 )
+
+EXPORT_FOLDER_OUTPUT = os.path.join(
+    MEDIA_ROOT,
+    'export_data'
+)
+
+if not os.path.exists(EXPORT_FOLDER_OUTPUT):
+    os.mkdir(EXPORT_FOLDER_OUTPUT)
+
+GEOJSON_FOLDER_OUTPUT = os.path.join(
+    EXPORT_FOLDER_OUTPUT,
+    'geojson'
+)
+
+if not os.path.exists(GEOJSON_FOLDER_OUTPUT):
+    os.mkdir(GEOJSON_FOLDER_OUTPUT)

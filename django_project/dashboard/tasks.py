@@ -1,10 +1,13 @@
 from celery import shared_task
+import logging
 
 from dashboard.models import (
     LayerUploadSession, ERROR, DONE
 )
 from georepo.models import EntityType
 from georepo.utils import load_geojson
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task(name="process_layer_upload_session")
@@ -53,5 +56,18 @@ def generate_vector_tiles_task(dataset_id: str, overwrite: bool):
     try:
         dataset = Dataset.objects.get(id=dataset_id)
         generate_vector_tiles(dataset, overwrite)
+    except Dataset.DoesNotExist:
+        return
+
+
+@shared_task(name="generate_dataset_export_data")
+def generate_dataset_export_data(dataset_id: str):
+    from georepo.models.dataset import Dataset
+    from georepo.utils.geojson import generate_geojson
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+        logger.info('Extracting geojson from dataset...')
+        generate_geojson(dataset)
+        logger.info('Extract dataset data done')
     except Dataset.DoesNotExist:
         return

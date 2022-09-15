@@ -13,9 +13,38 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def dataset_sql_query(dataset_id, level, tolerance=None):
+    if tolerance:
+        select_sql = (
+            'SELECT ST_AsBinary(ST_SimplifyVW(gg.geometry, '
+            '{tolerance})) AS geometry, '.format(
+                tolerance=tolerance
+            )
+        )
+    else:
+        select_sql = 'SELECT ST_AsBinary(gg.geometry) AS geometry, '
+    sql = (
+        select_sql +
+        'ST_AsText(circle.center) AS centroid, '
+        'gg.id, gg.label, '
+        'gg.level, ge.label as type, gg.internal_code as code,'
+        'pg.internal_code as parent_code '
+        'FROM georepo_geographicalentity gg '
+        'INNER JOIN georepo_entitytype ge on ge.id = gg.type_id '
+        'LEFT JOIN georepo_geographicalentity pg on pg.id = gg.parent_id '
+        'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '  # noqa
+        'WHERE gg.geometry && !BBOX! and gg.level = {level} '
+        'AND gg.dataset_id = {dataset_id}'.
+        format(
+            level=level,
+            dataset_id=dataset_id
+        ))
+    return sql
+
+
 def create_configuration_files(dataset: Dataset) -> [str]:
     """
-    Create toml configuration file that will be used for tegola
+    Create multiple toml configuration files based on dataset tiling config
     :return: array of output path
     """
     from georepo.models.dataset_tile_config import (
@@ -51,23 +80,11 @@ def create_configuration_files(dataset: Dataset) -> [str]:
                     dataset=dataset).first().level
             except Exception:  # noqa
                 level = 0
-            sql = (
-                'SELECT ST_AsBinary(ST_SimplifyVW(gg.geometry, {tolerance})) AS geometry, '  # noqa
-                'ST_AsText(circle.center) AS centroid, '
-                'gg.id, gg.label, '
-                'gg.level, ge.label as type, gg.internal_code as code,'
-                'pg.internal_code as parent_code '
-                'FROM georepo_geographicalentity gg '
-                'INNER JOIN georepo_entitytype ge on ge.id = gg.type_id '
-                'LEFT JOIN georepo_geographicalentity pg on pg.id = gg.parent_id '  # noqa
-                'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '  # noqa
-                'WHERE gg.geometry && !BBOX! and ge.id = {entity_type_id} '
-                'AND gg.dataset_id = {dataset_id}'.
-                format(
-                    tolerance=entity_conf.simplify_tolerance,
-                    entity_type_id=entity_conf.entity_type.id,
-                    dataset_id=dataset.id
-                ))
+            sql = dataset_sql_query(
+                dataset.id,
+                level,
+                tolerance=entity_conf.simplify_tolerance
+            )
             provider_layer = {
                 'name': f'Level-{level}',
                 'geometry_fieldname': 'geometry',
@@ -122,22 +139,10 @@ def create_configuration_file(dataset: Dataset) -> str:
     }]
 
     for level in levels:
-        sql = (
-            'SELECT ST_AsBinary(gg.geometry) AS geometry, '
-            'ST_AsText(circle.center) AS centroid, '
-            'gg.id, gg.label, '
-            'gg.level, ge.label as type, gg.internal_code as code,'
-            'pg.internal_code as parent_code '
-            'FROM georepo_geographicalentity gg '
-            'INNER JOIN georepo_entitytype ge on ge.id = gg.type_id '
-            'LEFT JOIN georepo_geographicalentity pg on pg.id = gg.parent_id '
-            'LEFT JOIN LATERAL (SELECT * from ST_MaximumInscribedCircle(gg.geometry)) circle ON True '  # noqa
-            'WHERE gg.geometry && !BBOX! and gg.level = {level} '
-            'AND gg.dataset_id = {dataset_id}'.
-            format(
-                level=level,
-                dataset_id=dataset.id
-            ))
+        sql = dataset_sql_query(
+            dataset.id,
+            level
+        )
         provider_layer = {
             'name': f'Level-{level}',
             'geometry_fieldname': 'geometry',
@@ -164,6 +169,7 @@ def create_configuration_file(dataset: Dataset) -> str:
 
 
 def generate_vector_tiles(dataset: Dataset, overwrite: bool = False):
+    from georepo.utils import generate_geojson
     if dataset.datasettilingconfig_set.exists():
         toml_config_files = create_configuration_files(dataset)
     else:
@@ -230,3 +236,8 @@ def generate_vector_tiles(dataset: Dataset, overwrite: bool = False):
         f'/layer_tiles/{dataset.label}/{{z}}/{{x}}/{{y}}?t={int(time.time())}'
     )
     dataset.save()
+
+    logger.info('Extracting geojson from {}'.format(dataset.label))
+    generate_geojson(dataset)
+
+    logger.info('Generating vector tiles done...')

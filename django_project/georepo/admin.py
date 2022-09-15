@@ -1,8 +1,11 @@
 import os.path
 import math
+import zipfile
+import tempfile
 
 from django.contrib import admin
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.html import format_html
 from guardian.admin import GuardedModelAdmin
 from georepo.models import (
@@ -56,9 +59,58 @@ def generate_vector_tiles(modeladmin, request, queryset):
         dataset.save()
 
 
+@admin.action(description='Export geojson data')
+def export_geojson_data(modeladmin, request, queryset):
+    from georepo.utils.geojson import generate_geojson
+    geojson_files = []
+    for dataset in queryset:
+        geojson_file_path = generate_geojson(dataset)
+        geojson_files.append(geojson_file_path)
+
+    if geojson_files:
+        with tempfile.SpooledTemporaryFile() as tmp_file:
+            with zipfile.ZipFile(
+                    tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+                for geojson_file in geojson_files:
+                    archive.write(
+                        geojson_file,
+                        arcname=geojson_file.split('/')[-1])
+            tmp_file.seek(0)
+            response = HttpResponse(
+                tmp_file.read(), content_type='application/x-zip-compressed'
+            )
+            response['Content-Disposition'] = (
+                'attachment; filename="geojson.zip"'
+            )
+            return response
+
+
+def generate_geojson_data(modeladmin, request, queryset):
+    from dashboard.tasks import generate_dataset_export_data
+    for dataset in queryset:
+        generate_dataset_export_data.delay(dataset.id)
+
+
 class DatasetAdmin(GuardedModelAdmin):
-    list_display = ('label', 'size', 'tiling_status', 'layer_preview')
-    actions = [generate_vector_tiles]
+    list_display = (
+        'label', 'size', 'tiling_status', 'geojson', 'layer_preview')
+    actions = [
+        generate_vector_tiles, export_geojson_data, generate_geojson_data]
+
+    def geojson(self, obj: Dataset):
+        geojson_file_path = os.path.join(
+            settings.GEOJSON_FOLDER_OUTPUT,
+            obj.label
+        ) + '.geojson'
+        if os.path.exists(geojson_file_path):
+            return format_html(
+                '<a href="{}">GeoJSON File</a>'.format(
+                    geojson_file_path.replace(
+                        settings.MEDIA_ROOT,
+                        settings.MEDIA_URL
+                    )))
+        return '-'
+
 
     def layer_preview(self, obj: Dataset):
         tile_path = os.path.join(

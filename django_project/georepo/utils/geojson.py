@@ -2,6 +2,7 @@ import os
 import json
 
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
+from django.conf import settings
 
 from georepo.models import (
     GeographicalEntity,
@@ -10,6 +11,31 @@ from georepo.models import (
     EntityCode,
     Dataset
 )
+from georepo.serializers.entity import GeographicalEntitySerializer
+
+
+def generate_geojson(dataset: Dataset):
+    """
+    Extract geojson from dataset and then save it to
+    geojson dataset folder
+    :param dataset: Dataset object
+    :return: geojson path
+    """
+    geojson_output_folder = settings.GEOJSON_FOLDER_OUTPUT
+    suffix = '.geojson'
+    entities = dataset.geographicalentity_set.all()
+    geojson_data = json.dumps(
+        GeographicalEntitySerializer(
+            entities, many=True
+        ).data,
+        indent=4)
+    geojson_file = os.path.join(
+        geojson_output_folder,
+        dataset.label
+    ) + suffix
+    with open(geojson_file, 'w') as outfile:
+        outfile.write(geojson_data)
+    return geojson_file
 
 
 def load_geojson(
