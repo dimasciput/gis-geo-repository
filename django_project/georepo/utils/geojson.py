@@ -11,7 +11,7 @@ from georepo.models import (
     EntityCode,
     Dataset
 )
-from georepo.serializers.entity import GeographicalEntitySerializer
+from georepo.serializers.entity import GeographicalGeojsonSerializer
 
 
 def generate_geojson(dataset: Dataset):
@@ -25,7 +25,7 @@ def generate_geojson(dataset: Dataset):
     suffix = '.geojson'
     entities = dataset.geographicalentity_set.all()
     geojson_data = json.dumps(
-        GeographicalEntitySerializer(
+        GeographicalGeojsonSerializer(
             entities, many=True
         ).data,
         indent=4)
