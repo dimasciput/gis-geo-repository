@@ -57,6 +57,11 @@ interface LanguageOption {
     name: string
 }
 
+interface IdType {
+    id: string,
+    name: string
+}
+
 interface NameField {
     id: string,
     selectedLanguage: string,
@@ -64,10 +69,18 @@ interface NameField {
     default: boolean,
 }
 
+interface IdField {
+    id: string,
+    field: string,
+    idType: IdType | null
+}
+
 function FormComponent() {
 
     const [languageOptions, setLanguageOptions] = useState<[] | LanguageOption[]>([])
+    const [idTypes, setIdTypes] = useState<IdType[]>([])
     const [nameFields, setNameFields] = useState<NameField[]>([])
+    const [idFields, setIdFields] = useState<IdField[]>([])
 
     const handleNameLanguageChange = (languageId: string, nameFieldId: string) => {
         const updatedNameFields = nameFields.map((nameField, index) => {
@@ -77,6 +90,17 @@ function FormComponent() {
             return nameField
         })
         setNameFields(updatedNameFields);
+    }
+
+    const handleIdTypeChange = (idTypeId: string, idFieldId: string) => {
+        const idType = idTypes.find(idType => idType.id == idTypeId)
+        const updatedIdFields = idFields.map(idField => {
+            if (idField.id === idFieldId) {
+                idField.idType = idType
+            }
+            return idField
+        })
+        setIdFields(updatedIdFields)
     }
 
     const handleDefaultNameFieldChange = (event: SelectChangeEvent) => {
@@ -108,6 +132,25 @@ function FormComponent() {
         ])
     }
 
+    const addIdField = () => {
+        let lastId = 0;
+        for (const idField of idFields) {
+            const idFieldId = parseInt(idField.id)
+            if (lastId < idFieldId) {
+                lastId = idFieldId
+            }
+        }
+        lastId += 1
+        setIdFields([
+            ...idFields,
+            {
+                id: lastId + '',
+                field: '',
+                idType: null
+            }
+        ])
+    }
+
     useEffect(() => {
         setLanguageOptions([
             {
@@ -119,11 +162,26 @@ function FormComponent() {
                 name: 'Indonesia'
             }
         ])
+        setIdTypes([
+            {
+                id: '1',
+                name: 'PCode'
+            },
+            {
+                id: '2',
+                name: 'Id'
+            }
+        ])
         setNameFields([{
             id: '1',
             selectedLanguage: '',
             field: '',
             default: false
+        }])
+        setIdFields([{
+            id: '1',
+            field: '',
+            idType: null
         }])
         return
     },[])
@@ -216,15 +274,71 @@ function FormComponent() {
                             </Grid>
                         </Grid>
                     ))}
-
                     <Grid container columnSpacing={1}>
                         <Grid item md={4} xl={3} xs={12}></Grid>
                         <Grid item>
                             <Button variant="contained" disableElevation onClick={addNameField}>
-                                Add
+                                Add Name Field
                             </Button>
                         </Grid>
                     </Grid>
+
+                    {idFields.map((idField: IdField, index: Number) => (
+                        <Grid container columnSpacing={1} key={idField.id}>
+                            <Grid item className={'form-label'} md={4}
+                                  xl={3} xs={12}>
+                                {(index == 0) ? (
+                                    <Typography variant={'subtitle1'}>Id Fields</Typography>
+                                ) : null}
+                            </Grid>
+
+                            <Grid item md={8} xl={7} xs={12}>
+                                <Grid container columnSpacing={1}
+                                      style={{paddingBottom: 0}}>
+                                    <Grid item md={6} xs={12}>
+                                        <FormControl sx={{width: '100%'}}>
+                                            <InputLabel
+                                                id="language-select">Type</InputLabel>
+                                            <Select
+                                                labelId="language-label"
+                                                className="language-select"
+                                                value={idField.idType ? idField.idType.id : ''}
+                                                label='Type'
+                                                onChange={(event: SelectChangeEvent) => handleIdTypeChange(
+                                                    event.target.value as string, idField.id)}
+                                                style={{width: '100%'}}
+                                            >
+                                                {idTypes.map((idType: IdType) =>
+                                                    <MenuItem
+                                                        value={idType.id}
+                                                        key={idType.id}>{idType.name}
+                                                    </MenuItem>
+                                                )}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item md={5} xs={12}>
+                                        <TextField
+                                            id="outlined-uncontrolled"
+                                            label="Field"
+                                            defaultValue=""
+                                            disabled={!idField.idType}
+                                            sx={{width: '100%'}}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    ))}
+                    <Grid container columnSpacing={1}>
+                        <Grid item md={4} xl={3} xs={12}></Grid>
+                        <Grid item>
+                            <Button variant="contained" disableElevation onClick={addIdField}>
+                                Add Id Field
+                            </Button>
+                        </Grid>
+                    </Grid>
+
                 </FormControl>
             </Grid>
         </Grid>
