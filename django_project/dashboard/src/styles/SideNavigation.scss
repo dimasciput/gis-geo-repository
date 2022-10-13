@@ -13,6 +13,11 @@
   padding: 0.2rem;
   overflow-y: auto;
   z-index: 1;
+
+  @include media(small-down) {
+    width: auto;
+    min-width: 3em;
+  }
 }
 
 .SideNavigation-Row {
@@ -37,5 +42,14 @@
 
   .SideNavigation-Row-Icon {
     margin-right: 0.5rem;
+  }
+
+  @include media(small-down) {
+    .SideNavigation-Row-Icon {
+      margin-right: 0;
+    }
+    .SideNavigation-Row-Name {
+      display: none;
+    }
   }
 }

@@ -1,5 +1,6 @@
 import {Home} from "./Dashboard";
 import Uploader from "./Upload";
+import LevelUpload from "./LevelUpload";
 import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
 import {OverridableComponent} from "@mui/material/OverridableComponent";
@@ -18,5 +19,8 @@ export const routes: Array<RouteInterface> = [
   },
   {
     name: 'Uploader', path: '/uploader', element: Uploader, icon: UploadIcon
+  },
+  {
+    name: 'Level Upload', path: '/level_upload', element: LevelUpload, icon: UploadIcon
   }
 ]
