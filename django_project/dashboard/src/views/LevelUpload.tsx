@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import '../styles/LayerUpload.scss';
 import {
-    Button,
-    FormControl,
+    Button, Checkbox,
+    FormControl, FormControlLabel, FormGroup,
     Grid,
     InputLabel,
     MenuItem,
@@ -61,7 +61,7 @@ interface NameField {
     id: string,
     selectedLanguage: string,
     field: string,
-    default: boolean
+    default: boolean,
 }
 
 function FormComponent() {
@@ -77,6 +77,35 @@ function FormComponent() {
             return nameField
         })
         setNameFields(updatedNameFields);
+    }
+
+    const handleDefaultNameFieldChange = (event: SelectChangeEvent) => {
+        let nameFieldId = event.target.value;
+        const updatedNameFields = nameFields.map((nameField, index) => {
+            nameField.default = nameField.id === nameFieldId;
+            return nameField
+        })
+        setNameFields(updatedNameFields)
+    }
+
+    const addNameField = () => {
+        let lastId = 0;
+        for (const nameField of nameFields) {
+            const nameFieldId = parseInt(nameField.id)
+            if (lastId < nameFieldId) {
+                lastId = nameFieldId
+            }
+        }
+        lastId += 1
+        setNameFields([
+            ...nameFields,
+            {
+                id: lastId + '',
+                selectedLanguage: '',
+                field: '',
+                default: false
+            }
+        ])
     }
 
     useEffect(() => {
@@ -129,13 +158,20 @@ function FormComponent() {
                             />
                         </Grid>
                     </Grid>
-                    <Grid container columnSpacing={1}>
-                        <Grid item className={'form-label'} md={4} xl={3} xs={12}>
-                            <Typography variant={'subtitle1'}>Name Fields</Typography>
-                        </Grid>
-                        {nameFields.map((nameField: NameField) => (
-                            <Grid item md={8} xl={7} xs={12} key={nameField.id}>
-                                <Grid container columnSpacing={1} style={{ paddingBottom: 0 }}>
+
+                    {nameFields.map((nameField: NameField, index: Number) => (
+                        <Grid container columnSpacing={1} key={nameField.id}>
+                            <Grid item className={'form-label'} md={4}
+                                  xl={3} xs={12}>
+                                {(index == 0) ? (
+                                    <Typography variant={'subtitle1'}>Name
+                                        Fields</Typography>
+                                ) : null}
+                            </Grid>
+
+                            <Grid item md={8} xl={7} xs={12}>
+                                <Grid container columnSpacing={1}
+                                      style={{paddingBottom: 0}}>
                                     <Grid item md={6} xs={12}>
                                         <FormControl sx={{width: '100%'}}>
                                             <InputLabel
@@ -158,7 +194,7 @@ function FormComponent() {
                                             </Select>
                                         </FormControl>
                                     </Grid>
-                                    <Grid item md={6} xs={12}>
+                                    <Grid item md={5} xs={12}>
                                         <TextField
                                             id="outlined-uncontrolled"
                                             label="Field"
@@ -167,12 +203,24 @@ function FormComponent() {
                                             sx={{width: '100%'}}
                                         />
                                     </Grid>
+                                    <Grid item md={1} xs={12}>
+                                        <FormGroup className='default-check-box'>
+                                          <FormControlLabel
+                                              control={<Checkbox checked={nameField.default}
+                                                                value={nameField.id}
+                                                                onChange={handleDefaultNameFieldChange}/>}
+                                              label="Default" />
+                                        </FormGroup>
+                                    </Grid>
                                 </Grid>
                             </Grid>
-                        ))}
+                        </Grid>
+                    ))}
 
+                    <Grid container columnSpacing={1}>
+                        <Grid item md={4} xl={3} xs={12}></Grid>
                         <Grid item>
-                            <Button variant="contained" disableElevation>
+                            <Button variant="contained" disableElevation onClick={addNameField}>
                                 Add
                             </Button>
                         </Grid>
