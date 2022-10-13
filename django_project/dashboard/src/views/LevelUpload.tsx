@@ -187,9 +187,9 @@ function FormComponent() {
     },[])
 
     return (<div className='level-upload-container'>
-        <Grid container columnSpacing={2}>
-            <Grid item xl={6} md={6} xs={12}>
-                <FormControl id="level-upload-form">
+        <FormControl id="level-upload-form">
+            <Grid container columnSpacing={2}>
+                <Grid item xl={6} md={6} xs={12}>
                     <Grid container columnSpacing={1}>
                         <Grid className={'form-label'} item md={4} xl={3} xs={12}>
                             <Typography variant={'subtitle1'}>Input file/URL</Typography>
@@ -339,17 +339,52 @@ function FormComponent() {
                         </Grid>
                     </Grid>
 
-                </FormControl>
-            </Grid>
-        </Grid>
+                    <Grid container columnSpacing={1}>
+                        <Grid className={'form-label'} item md={4} xl={3} xs={12}>
+                            <Typography variant={'subtitle1'}>Parent Id Field</Typography>
+                        </Grid>
+                        <Grid item md={8} xl={9} xs={12}>
+                            <TextField
+                              id="outlined-uncontrolled"
+                              label="Parent Id Field"
+                              defaultValue=""
+                              sx={{ width: '100%' }}
+                            />
+                        </Grid>
+                    </Grid>
 
+                    <Grid container columnSpacing={1}>
+                        <Grid className={'form-label'} item md={4} xl={3} xs={12}>
+                            <Typography variant={'subtitle1'}>Source Field</Typography>
+                        </Grid>
+                        <Grid item md={8} xl={9} xs={12}>
+                            <TextField
+                              id="outlined-uncontrolled"
+                              label="Source Field"
+                              defaultValue=""
+                              sx={{ width: '100%' }}
+                            />
+                        </Grid>
+                    </Grid>
+
+                </Grid>
+            </Grid>
+
+            <Grid container>
+                <Grid item xs={12} md={2} xl={1} lg={2} className='submit-button-container'>
+                    <Button variant="contained" size="large">
+                        Add Level
+                    </Button>
+                </Grid>
+            </Grid>
+        </FormControl>
     </div>)
 }
 
 
 function LevelUpload() {
     return (
-        <div>
+        <div className='level-upload'>
             <HeaderComponent/>
             <FormComponent/>
         </div>

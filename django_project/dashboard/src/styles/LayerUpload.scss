@@ -1,5 +1,9 @@
 @import 'variables';
 
+.level-upload {
+  overflow-x: auto;
+}
+
 .header-container {
   padding: 15px;
 
@@ -27,6 +31,12 @@
   border-top: 5px solid #f4f4f4;
   padding: 20px;
 
+  @include media(small-down) {
+    .MuiGrid-item {
+      padding-top: 10px;
+    }
+  }
+
   #level-upload-form {
     width: 100%;
     input {
@@ -43,11 +53,17 @@
     .language-select {
       text-align: left;
     }
-    button {
-      height: 100%;
-    }
     .default-check-box {
       padding-top: 8px;
+    }
+  }
+
+  .submit-button-container {
+      margin-left: auto;
+      text-align: right;
+
+    button {
+      width: 100%;
     }
   }
 }
